@@ -10,7 +10,7 @@ server/prisma/.env
 *.tsbuildinfo
 __pycache__/
 *.pyc
-data/
+/data/
 design/
 visual-system/
 qa/
