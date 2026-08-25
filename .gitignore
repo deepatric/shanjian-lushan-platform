@@ -11,6 +11,7 @@ server/prisma/.env
 __pycache__/
 *.pyc
 /data/
+/server/data/
 design/
 visual-system/
 qa/
