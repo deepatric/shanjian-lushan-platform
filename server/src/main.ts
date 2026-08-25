@@ -578,10 +578,12 @@ class PublicController {
         prisma.mediaLink.findMany({ where: { targetType: 'event', targetId: { in: eventIds } }, orderBy: { sortOrder: 'asc' } }),
         prisma.sourceLink.findMany({ where: { targetType: 'event', targetId: { in: eventIds } } }),
       ]);
-      const [linkedMedia, linkedSources] = await Promise.all([
+      const [mediaRows, linkedSources] = await Promise.all([
         mediaLinks.length ? prisma.media.findMany({ where: { id: { in: mediaLinks.map((item) => item.mediaId) } } }) : Promise.resolve([]),
         sourceLinks.length ? prisma.source.findMany({ where: { id: { in: sourceLinks.map((item) => item.sourceId) } } }) : Promise.resolve([]),
       ]);
+      const mediaById = new Map(mediaRows.map((item) => [item.id, item]));
+      const linkedMedia = mediaLinks.map((item) => mediaById.get(item.mediaId)).filter(Boolean);
       return {
         ...toMapPoint(pointRow),
         timelineEvents: events.map(toEvent),
@@ -600,9 +602,11 @@ class PublicController {
       : [];
     const relatedRows = await prisma.place.findMany({ where: { regionId: place.regionId, NOT: { id: place.id } }, take: 4 });
     const mediaLinks = await prisma.mediaLink.findMany({ where: { targetType: 'place', targetId: id }, orderBy: { sortOrder: 'asc' } });
-    const linkedMedia = mediaLinks.length
+    const mediaRows = mediaLinks.length
       ? await prisma.media.findMany({ where: { id: { in: mediaLinks.map((item) => item.mediaId) } } })
       : [];
+    const mediaById = new Map(mediaRows.map((item) => [item.id, item]));
+    const linkedMedia = mediaLinks.map((item) => mediaById.get(item.mediaId)).filter(Boolean);
     const sourceLinks = await prisma.sourceLink.findMany({ where: { targetType: 'place', targetId: id } });
     const linkedSources = sourceLinks.length
       ? await prisma.source.findMany({ where: { id: { in: sourceLinks.map((item) => item.sourceId) } } })

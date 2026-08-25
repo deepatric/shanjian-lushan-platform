@@ -64,7 +64,9 @@ function imagesForPlace(place: PlaceDetail) {
     .filter((item) => item.url && !item.isAiGenerated)
     .map((item) => ({
       title: item.title,
-      url: item.url as string,
+      url: /^https?:\/\//i.test(item.url as string)
+        ? item.url as string
+        : `${import.meta.env.BASE_URL}${(item.url as string).replace(/^\/+/, '')}`,
     }));
 }
 
@@ -485,7 +487,8 @@ function DetailDrawer({
   onSupplement: (place: PlaceDetail) => void;
 }) {
   const [galleryOpen, setGalleryOpen] = useState(false);
-  useEffect(() => { setGalleryOpen(false); }, [place?.id]);
+  const [imageIndex, setImageIndex] = useState(0);
+  useEffect(() => { setGalleryOpen(false); setImageIndex(0); }, [place?.id]);
   if (!place) return null;
   const images = imagesForPlace(place);
   const detailEvents = place.timelineEvents;
@@ -499,7 +502,7 @@ function DetailDrawer({
       >
         <div className="detail-body">
           {images.length ? (
-            <button type="button" className="media-gate" onClick={() => setGalleryOpen(true)}>
+            <button type="button" className="media-gate" onClick={() => { setImageIndex(0); setGalleryOpen(true); }}>
               <Images size={24} />
               <strong>查看图片</strong>
               <span>{images.length} 张</span>
@@ -543,7 +546,12 @@ function DetailDrawer({
         <div className="image-viewer-backdrop" role="dialog" aria-modal="true" aria-label={`${place.name}图片`} onClick={() => setGalleryOpen(false)}>
           <div className="image-viewer" onClick={(event) => event.stopPropagation()}>
             <button type="button" className="image-viewer-close icon-button" aria-label="关闭图片" onClick={() => setGalleryOpen(false)}><X size={18} /></button>
-            {images.map((image) => <img key={image.url} src={image.url} alt={image.title} referrerPolicy="no-referrer" />)}
+            <img src={images[imageIndex].url} alt={images[imageIndex].title} referrerPolicy="no-referrer" />
+            <div className="image-viewer-toolbar">
+              <button type="button" className="icon-button" aria-label="上一张图片" disabled={images.length < 2} onClick={() => setImageIndex((index) => (index - 1 + images.length) % images.length)}><ChevronLeft size={18} /></button>
+              <span>{imageIndex + 1} / {images.length}</span>
+              <button type="button" className="icon-button" aria-label="下一张图片" disabled={images.length < 2} onClick={() => setImageIndex((index) => (index + 1) % images.length)}><ChevronRight size={18} /></button>
+            </div>
           </div>
         </div>
       )}

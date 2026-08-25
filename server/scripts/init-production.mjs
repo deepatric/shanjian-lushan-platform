@@ -8,6 +8,7 @@ const { Client } = pg;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(__dirname, '../..');
 const databaseUrl = process.env.DATABASE_URL;
+const supplementalFiles = ['006_place_photos.sql'];
 
 if (!databaseUrl) throw new Error('DATABASE_URL is required');
 
@@ -71,6 +72,15 @@ async function applyDatabaseFiles(client) {
   }
 }
 
+async function applySupplementalFiles(client) {
+  for (const file of supplementalFiles) {
+    const sql = await readFile(resolve(workspaceRoot, 'server/database', file), 'utf8').catch(() => '');
+    if (!sql) continue;
+    await client.query(sql);
+    console.log(`Applied ${file}`);
+  }
+}
+
 async function upsertAdmins(client, accounts) {
   for (const account of accounts) {
     await client.query(
@@ -99,6 +109,7 @@ try {
   await client.query('SELECT pg_advisory_lock($1)', [19371945]);
   if (!(await hasDataset(client))) await applyDatabaseFiles(client);
   else console.log('Database dataset already initialized; preserving current records');
+  await applySupplementalFiles(client);
   await upsertAdmins(client, readAdminAccounts());
   await client.query('SELECT pg_advisory_unlock($1)', [19371945]);
 } finally {
