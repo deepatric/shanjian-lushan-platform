@@ -15,8 +15,9 @@ npm run dev
 
 ## 后端部署
 
-- 后端：Render Node Web Service，基础设施配置见 `render.yaml`。
-- 数据库：Render PostgreSQL，首次部署由 `server/scripts/init-production.mjs` 建表、填充点位并初始化管理员。
-- 健康检查：`GET /api/health`。
+- 境内部署平台：Sealos 杭州区。
+- 后端镜像：`ghcr.io/deepatric/shanjian-lushan-api:latest`，由 GitHub Actions 自动构建。
+- 数据库：Sealos PostgreSQL，容器启动时由 `server/scripts/init-production.mjs` 幂等建表、填充点位并初始化管理员。
+- 服务端口：`4000`；健康检查：`GET /api/health`。
 
-创建 Render Blueprint 时必须填写 `ADMIN_ACCOUNTS_JSON`。管理员密码只保存为部署密钥和数据库哈希，不得提交到仓库。
+应用环境变量必须配置 `DATABASE_URL`、`ADMIN_ACCOUNTS_JSON` 和 `CORS_ORIGINS=https://deepatric.github.io`。管理员密码只保存为部署密钥和数据库哈希，不得提交到仓库。

@@ -240,7 +240,7 @@ SELECT
   jsonb_build_array('事件点位', CASE WHEN s.marker_type = 'battle' THEN '战争事件' ELSE '事务事件' END)::text AS tags,
   s.longitude,
   s.latitude,
-  ST_SetSRID(ST_MakePoint(s.longitude, s.latitude), 4326) AS geom_point,
+  ('POINT(' || s.longitude || ' ' || s.latitude || ')')::text AS geom_point,
   s.spatial_precision,
   s.coordinate_confidence,
   s.start_date,

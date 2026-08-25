@@ -3,7 +3,6 @@
 
 BEGIN;
 
-CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
@@ -156,8 +155,7 @@ CREATE TABLE IF NOT EXISTS public.places (
   latitude double precision NOT NULL CHECK (latitude BETWEEN 27 AND 31),
   altitude double precision,
   geom text,
-  geom_point geometry(Point, 4326)
-    GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)) STORED,
+  geom_point text,
   spatial_precision text NOT NULL DEFAULT 'exact'
     CHECK (spatial_precision IN ('exact', 'road', 'village', 'site', 'scenic_area', 'town', 'area_estimated')),
   coordinate_confidence text NOT NULL DEFAULT 'medium'
@@ -192,7 +190,6 @@ CREATE INDEX IF NOT EXISTS places_kind_idx ON public.places (place_kind);
 CREATE INDEX IF NOT EXISTS places_region_text_idx ON public.places (region);
 CREATE INDEX IF NOT EXISTS places_start_year_idx ON public.places (start_year);
 CREATE INDEX IF NOT EXISTS places_status_idx ON public.places (status);
-CREATE INDEX IF NOT EXISTS places_geom_point_idx ON public.places USING gist (geom_point);
 CREATE INDEX IF NOT EXISTS places_name_trgm_idx ON public.places USING gin (name gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS public.events (
@@ -248,8 +245,7 @@ CREATE TABLE IF NOT EXISTS public.event_locations (
   longitude double precision NOT NULL CHECK (longitude BETWEEN 113 AND 118),
   latitude double precision NOT NULL CHECK (latitude BETWEEN 27 AND 31),
   altitude double precision,
-  geom_point geometry(Point, 4326)
-    GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)) STORED,
+  geom_point text,
   spatial_precision text NOT NULL DEFAULT 'site'
     CHECK (spatial_precision IN ('exact', 'road', 'village', 'site', 'scenic_area', 'town', 'area_estimated')),
   coordinate_confidence text NOT NULL DEFAULT 'medium'
@@ -261,7 +257,6 @@ CREATE TABLE IF NOT EXISTS public.event_locations (
 );
 
 CREATE INDEX IF NOT EXISTS event_locations_event_idx ON public.event_locations (event_id);
-CREATE INDEX IF NOT EXISTS event_locations_geom_idx ON public.event_locations USING gist (geom_point);
 CREATE INDEX IF NOT EXISTS event_locations_name_trgm_idx ON public.event_locations USING gin (location_name gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS public.place_events (
