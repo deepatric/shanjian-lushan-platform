@@ -20,4 +20,4 @@ npm run dev
 - 数据库：Sealos PostgreSQL，容器启动时由 `server/scripts/init-production.mjs` 幂等建表、填充点位并初始化管理员。
 - 服务端口：`4000`；健康检查：`GET /api/health`。
 
-应用环境变量必须配置 `DATABASE_URL`、`ADMIN_ACCOUNTS_JSON` 和 `CORS_ORIGINS=https://deepatric.github.io`。管理员密码只保存为部署密钥和数据库哈希，不得提交到仓库。
+应用环境变量必须配置 `DATABASE_URL`、`CORS_ORIGINS=https://deepatric.github.io`，以及 `ADMIN_ACCOUNTS_JSON` 或由五个逗号分隔密码组成的 `ADMIN_PASSWORDS`。管理员密码只保存为部署密钥和数据库哈希，不得提交到仓库。

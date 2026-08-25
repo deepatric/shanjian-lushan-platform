@@ -19,10 +19,24 @@ function hashPassword(password) {
 
 function readAdminAccounts() {
   const raw = process.env.ADMIN_ACCOUNTS_JSON;
-  if (!raw) throw new Error('ADMIN_ACCOUNTS_JSON is required');
-  const accounts = JSON.parse(raw);
+  const compactPasswords = process.env.ADMIN_PASSWORDS?.split(',').map((value) => value.trim());
+  const accounts = raw
+    ? JSON.parse(raw)
+    : [
+        ['admin-01', 'admin01@shanjian.local', '平台主管'],
+        ['admin-02', 'admin02@shanjian.local', '档案管理员'],
+        ['admin-03', 'admin03@shanjian.local', '内容管理员'],
+        ['admin-04', 'admin04@shanjian.local', '审核管理员'],
+        ['admin-05', 'admin05@shanjian.local', '运营管理员'],
+      ].map(([id, email, nickname], index) => ({
+        id,
+        email,
+        nickname,
+        password: compactPasswords?.[index],
+        permissions: ['*'],
+      }));
   if (!Array.isArray(accounts) || accounts.length !== 5) {
-    throw new Error('ADMIN_ACCOUNTS_JSON must contain exactly five accounts');
+    throw new Error('ADMIN_ACCOUNTS_JSON or ADMIN_PASSWORDS must contain exactly five accounts');
   }
   for (const account of accounts) {
     if (!account.id || !/^\S+@\S+\.\S+$/.test(account.email ?? '') || !account.nickname || String(account.password ?? '').length < 12) {
