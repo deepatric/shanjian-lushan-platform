@@ -1,0 +1,113 @@
+# API 详细设计
+
+## 1. 规范
+- REST 风格。
+- JSON 响应。
+- 统一错误码。
+- 受限接口统一 Bearer Token。
+
+## 2. 公共接口
+
+### GET /api/map/places
+**用途：** 获取地图点位  
+**Query：**
+- type[]
+- region_id
+- keyword
+- time_from
+- time_to
+
+**响应字段：**
+- id
+- name
+- place_type
+- longitude
+- latitude
+- region
+- highlight_level
+
+### GET /api/map/places/{id}
+**用途：** 获取地点详情  
+**响应字段：**
+- base_info
+- summary
+- timeline_events[]
+- media[]
+- related_places[]
+- related_events[]
+- sources[]
+- notes[]
+
+### GET /api/search
+**用途：** 全局搜索  
+**Query：** q  
+**响应分组：**
+- places[]
+- persons[]
+- events[]
+
+### GET /api/events/timeline
+**用途：** 获取时间轴数据  
+**响应字段：**
+- time_bucket
+- visible_places[]
+- keyframes[]
+
+## 3. 用户接口
+
+### POST /api/auth/register
+- email
+- password
+- nickname
+
+### POST /api/auth/login
+- email
+- password
+
+### GET /api/me
+- user profile
+
+### POST /api/favorites
+- place_id
+
+### POST /api/ugc/submissions
+**Body：**
+- submission_type
+- place_payload / text_payload / media_payload
+- source_note
+
+### POST /api/export-requests
+**Body：**
+- data_scope
+- filters
+- reason
+
+## 4. 管理接口
+
+### GET /api/admin/ugc/submissions
+### POST /api/admin/ugc/{id}/approve
+### POST /api/admin/ugc/{id}/reject
+### CRUD /api/admin/places
+### CRUD /api/admin/events
+### CRUD /api/admin/persons
+### CRUD /api/admin/regions
+### CRUD /api/admin/media
+### CRUD /api/admin/sources
+### GET /api/admin/logs
+### GET/PUT /api/admin/config
+
+## 5. 错误码
+| code | 含义 |
+| --- | --- |
+| AUTH_REQUIRED | 需要登录 |
+| FORBIDDEN | 无权限 |
+| VALIDATION_ERROR | 字段校验失败 |
+| NOT_FOUND | 资源不存在 |
+| DUPLICATE | 重复资源 |
+| REVIEW_REQUIRED | 内容需审核 |
+
+## 6. 幂等与审计
+- 审核、发布、审批接口需写日志。
+- 上传接口需返回可追踪资源 ID。
+- 导出审批需生成唯一 request_id。
+

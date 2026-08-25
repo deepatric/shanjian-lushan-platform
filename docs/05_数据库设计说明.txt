@@ -1,0 +1,53 @@
+
+数据库设计说明
+1. 设计目标
+支撑首版功能闭环
+保证地点唯一性
+保证人物、事件、区域可检索
+为后续 AI、知识库、复杂分析预留结构
+2. 核心实体
+place
+event
+person
+region
+media
+source
+user
+admin
+3. 关系实体
+place_event
+event_person
+media_link
+source_link
+favorite
+4. 流程实体
+ugc_submission
+export_request
+audit_log
+operation_log
+notification
+5. 关键设计规则
+同一真实地点只保留一个 place。
+时间变化通过 event 和 place_event 表达，不重复建点。
+人物、区域、事件必须独立建表。
+AI 图像通过 is_ai_generated 标记。
+任何需要审核的对象都必须有审核状态与日志。
+6. 建议索引
+place(name)
+place(place_type)
+place(region_id)
+event(title)
+event(start_time)
+person(name)
+region(name)
+全文检索索引：place.summary、event.summary、person.summary
+7. 后续扩展预留
+knowledge_chunk
+entity_embedding
+story
+analysis_layer
+version_snapshot
+8. 不建议的设计
+不要把人物、事件、区域全部塞进 place 的文本字段。
+不要把 UGC 直接写入正式表。
+不要把 AI 场景图和真实史料图放进同一语义字段。

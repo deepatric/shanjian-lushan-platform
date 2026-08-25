@@ -1,0 +1,476 @@
+
+庐山抗战文化景观可视化平台
+实施设计说明书
+**用途：** 将最终版需求文档进一步落到可开发层，作为页面设计、接口联调、数据库建模和迭代排期的直接依据。  
+**依赖基线：** 《庐山抗战文化景观可视化平台_开发需求文档_最终版》
+1. 信息架构
+1.1 产品总结构
+flowchart TD
+    A["公开前台"] --> A1["主地图页"]
+    A --> A2["登录页"]
+    A --> A3["注册页"]
+    A --> A4["帮助页"]
+    A --> A5["个人中心"]
+    A1 --> A11["搜索"]
+    A1 --> A12["筛选"]
+    A1 --> A13["时间轴"]
+    A1 --> A14["地点详情"]
+    A1 --> A15["设置"]
+    A5 --> A51["我的收藏"]
+    A5 --> A52["我的提交"]
+    A5 --> A53["我的导出申请"]
+
+    B["管理后台"] --> B1["管理员登录"]
+    B --> B2["数据管理"]
+    B --> B3["UGC 审核"]
+    B --> B4["导出审批"]
+    B --> B5["系统配置"]
+    B --> B6["操作日志"]
+    B2 --> B21["地点"]
+    B2 --> B22["人物"]
+    B2 --> B23["事件"]
+    B2 --> B24["区域"]
+    B2 --> B25["图片/媒体"]
+    B2 --> B26["来源"]
+1.2 前后台分层
+层级
+作用
+核心说明
+公开前台
+面向所有用户
+浏览、搜索、筛选、时间叙事、地点详情
+登录后前台
+面向注册用户
+收藏、UGC、导出申请、个人中心
+管理后台
+面向管理员
+数据维护、审核、审批、配置、日志
+数据服务层
+面向系统
+实体关系、检索、审核流、文件资源、权限
+2. 页面清单
+2.1 前台页面
+页面
+访问权限
+核心模块
+说明
+主地图页
+匿名可访问
+地图、时间轴、搜索、筛选、图例、底图切换、地点详情入口
+产品主入口
+登录页
+匿名
+登录表单、找回密码入口
+用户登录
+注册页
+匿名
+注册表单、协议说明
+普通用户注册
+帮助页
+匿名
+图例说明、使用说明、常见问题
+降低理解成本
+个人中心
+登录
+我的收藏、我的提交、我的导出申请、资料
+登录后中枢
+UGC 提交页 / 弹窗
+登录
+新地点、图片、文字补充表单
+需校验与审核
+导出申请页 / 弹窗
+登录
+范围选择、申请理由
+需审批
+用户设置页
+登录可选，匿名可本地设置
+底图、自动播放、动画速度、标签密度
+体验调节
+2.2 后台页面
+页面
+核心功能
+管理员登录页
+管理员独立登录
+仪表盘
+待审核数量、待审批数量、近期操作
+地点管理
+增删改查、关联事件、关联人物、关联图片
+人物管理
+增删改查、关联地点与事件
+事件管理
+增删改查、时间、地点、人物、来源
+区域管理
+区域层级、空间范围
+图片/媒体管理
+图片、AI 标记、来源、关联对象
+来源管理
+来源条目维护
+UGC 审核
+待审核列表、详情、编辑、通过、驳回
+导出审批
+申请审核、下载权限生成
+系统配置
+默认底图、初始视角、默认图层、功能开关
+操作日志
+审核、发布、编辑、审批日志
+3. 关键页面行为定义
+3.1 主地图页
+默认允许匿名进入。
+默认显示专题底图。
+默认加载事件点、遗址点、战争点三类点，但应有可控筛选。
+默认自动播放时间轴，但允许用户暂停、拖动。
+关键时间节点触发镜头飞跃，不做持续跟随。
+同一时间同一区域多个点出现时，前端必须执行防遮挡策略。
+搜索结果点击后必须定位地图并打开详情。
+3.2 地点详情窗
+必须支持三类点打开。
+结构固定：基础信息、历史简介、时间演变、图像资料、相关对象、来源备注。
+对 2–3 个重点地点，展示跨时间事件序列。
+后续新增模块不得破坏现有基础模块顺序。
+3.3 UGC 提交
+未登录用户点击提交时先引导登录。
+新地点提交必须包含：名称、类别、坐标、描述、来源说明。
+图片上传必须带说明。
+所有提交进入待审核，前台不直接展示。
+4. 数据模型设计
+4.1 核心实体关系
+erDiagram
+    PLACE ||--o{ PLACE_EVENT : has
+    EVENT ||--o{ PLACE_EVENT : linked_to
+    PERSON ||--o{ EVENT_PERSON : participates
+    EVENT ||--o{ EVENT_PERSON : includes
+    REGION ||--o{ PLACE : contains
+    PLACE ||--o{ MEDIA_LINK : owns
+    EVENT ||--o{ MEDIA_LINK : owns
+    MEDIA ||--o{ MEDIA_LINK : linked
+    SOURCE ||--o{ SOURCE_LINK : cited_by
+    PLACE ||--o{ SOURCE_LINK : cites
+    EVENT ||--o{ SOURCE_LINK : cites
+    USER ||--o{ UGC_SUBMISSION : submits
+    USER ||--o{ EXPORT_REQUEST : requests
+    USER ||--o{ FAVORITE : favorites
+4.2 主表建议
+place
+字段
+类型
+说明
+id
+uuid
+主键
+name
+varchar
+地点名
+place_type
+enum
+event_place / heritage_place / battle_place
+longitude
+decimal
+经度
+latitude
+decimal
+纬度
+region_id
+uuid
+所属区域
+summary
+text
+简介
+tags
+jsonb
+标签
+status
+enum
+active / hidden
+created_at
+timestamp
+创建时间
+updated_at
+timestamp
+更新时间
+event
+字段
+类型
+说明
+id
+uuid
+主键
+title
+varchar
+事件名
+start_time
+date / varchar
+支持模糊时间表达
+end_time
+date / varchar
+可空
+summary
+text
+事件说明
+region_id
+uuid
+主要区域
+created_at
+timestamp
+创建时间
+person
+字段
+类型
+说明
+id
+uuid
+主键
+name
+varchar
+姓名
+aliases
+jsonb
+别名
+summary
+text
+简介
+region
+字段
+类型
+说明
+id
+uuid
+主键
+name
+varchar
+区域名
+parent_id
+uuid
+上级区域
+geometry
+geometry/json
+区域范围
+media
+字段
+类型
+说明
+id
+uuid
+主键
+media_type
+enum
+image / audio / video / model
+url
+varchar
+资源地址
+title
+varchar
+标题
+caption
+text
+说明
+is_ai_generated
+boolean
+是否 AI 生成
+source_id
+uuid
+来源
+source
+字段
+类型
+说明
+id
+uuid
+主键
+title
+varchar
+来源标题
+source_type
+varchar
+档案 / 书籍 / 图片 / 口述等
+citation
+text
+引用信息
+note
+text
+备注
+4.3 关系表建议
+表
+用途
+place_event
+地点与事件多对多
+event_person
+事件与人物多对多
+media_link
+媒体与地点/事件关联
+source_link
+来源与地点/事件关联
+favorite
+用户收藏地点
+4.4 审核与用户表
+表
+用途
+user
+普通用户
+admin
+管理员
+ugc_submission
+UGC 原始提交
+export_request
+导出申请
+audit_log
+审核日志
+operation_log
+操作日志
+notification
+站内消息
+5. API 清单
+5.1 公共 API
+方法
+路径
+说明
+GET
+/api/map/places
+获取地图点位
+GET
+/api/map/places/{id}
+获取地点详情
+GET
+/api/search
+全局搜索
+GET
+/api/filters/regions
+获取区域筛选项
+GET
+/api/events/timeline
+获取时间轴数据
+GET
+/api/config/public
+获取公开配置
+5.2 用户 API
+方法
+路径
+说明
+POST
+/api/auth/register
+普通用户注册
+POST
+/api/auth/login
+普通用户登录
+GET
+/api/me
+当前用户信息
+GET
+/api/me/favorites
+我的收藏
+POST
+/api/favorites
+收藏地点
+DELETE
+/api/favorites/{placeId}
+取消收藏
+POST
+/api/ugc/submissions
+提交 UGC
+GET
+/api/me/submissions
+我的提交
+POST
+/api/export-requests
+提交导出申请
+GET
+/api/me/export-requests
+我的导出申请
+GET
+/api/me/notifications
+我的站内消息
+5.3 管理后台 API
+方法
+路径
+说明
+POST
+/api/admin/auth/login
+管理员登录
+GET
+/api/admin/dashboard
+后台概览
+CRUD
+/api/admin/places
+地点管理
+CRUD
+/api/admin/events
+事件管理
+CRUD
+/api/admin/persons
+人物管理
+CRUD
+/api/admin/regions
+区域管理
+CRUD
+/api/admin/media
+媒体管理
+CRUD
+/api/admin/sources
+来源管理
+GET
+/api/admin/ugc/submissions
+UGC 列表
+POST
+/api/admin/ugc/{id}/approve
+UGC 通过
+POST
+/api/admin/ugc/{id}/reject
+UGC 驳回
+GET
+/api/admin/export-requests
+导出申请列表
+POST
+/api/admin/export-requests/{id}/approve
+导出批准
+POST
+/api/admin/export-requests/{id}/reject
+导出驳回
+GET
+/api/admin/logs
+操作日志
+GET/PUT
+/api/admin/config
+系统配置
+6. 迭代排期建议
+6.1 版本节奏
+阶段
+目标
+主要交付
+Sprint 0
+项目准备
+仓库、环境、数据库基线、设计规范、样例数据
+Sprint 1
+前台骨架
+主地图、三类点、专题底图、详情窗基础
+Sprint 2
+时间叙事
+时间轴、关键飞跃、重点地点多时间事件
+Sprint 3
+检索能力
+全局搜索、筛选、实体关系查询
+Sprint 4
+账户体系
+注册登录、匿名限制、个人中心、收藏
+Sprint 5
+共建闭环
+UGC 提交、审核、发布、日志
+Sprint 6
+后台治理
+数据管理、导出审批、系统配置
+Sprint 7
+打磨上线
+性能、帮助、移动端基础适配、缺陷修复
+6.2 首版最小可上线闭环
+若需压缩进度，必须至少保留：
+主地图
+三类点
+时间轴
+详情窗
+搜索筛选
+登录注册
+UGC 提交审核
+后台基础管理
+7. 关键实施约束
+前台轻量，不代表后台可以松散。
+数据结构必须先于 AI、搜索增强、复杂分析能力建设。
+动态模式必须严格按“轻量时间叙事”落地，禁止回退到前期资料中的大战场复杂方案。
+如果任何新增需求改变“地点唯一性、权限边界、审核链路、首版范围”，必须先修订需求文档再开发。

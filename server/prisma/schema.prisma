@@ -1,0 +1,435 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id
+  email        String   @unique
+  nickname     String
+  passwordHash String   @map("password_hash")
+  role         String   @default("user")
+  status       String   @default("active")
+  avatarUrl    String?  @map("avatar_url")
+  organization String?
+  bio          String?
+  favorites    String   @default("[]")
+  settings     String   @default("{}")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("users")
+}
+
+model Admin {
+  id           String   @id
+  email        String   @unique
+  nickname     String
+  passwordHash String   @map("password_hash")
+  role         String   @default("admin")
+  status       String   @default("active")
+  avatarUrl    String?  @map("avatar_url")
+  permissions  String   @default("[]")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("admins")
+}
+
+model Session {
+  id          String   @id
+  subjectId   String   @map("subject_id")
+  subjectType String   @default("user") @map("subject_type")
+  role        String
+  token       String   @unique
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  expiresAt   DateTime @map("expires_at")
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([subjectId])
+  @@index([role])
+  @@map("sessions")
+}
+
+model Region {
+  id          String   @id
+  code        String?  @unique
+  name        String
+  regionType  String   @default("area") @map("region_type")
+  count       Int      @default(0)
+  parentId    String?  @map("parent_id")
+  geom        String?
+  bbox        String?
+  centerLng   Float?   @map("center_lng")
+  centerLat   Float?   @map("center_lat")
+  sortOrder   Int      @default(0) @map("sort_order")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId])
+  @@map("regions")
+}
+
+model Place {
+  id                 String   @id
+  name               String
+  slug               String   @unique
+  officialName       String?  @map("official_name")
+  historicalNames    String   @default("[]") @map("historical_names")
+  placeType          String   @map("place_type")
+  longitude          Float
+  latitude           Float
+  altitude           Float?
+  geom               String?
+  spatialPrecision   String   @default("point") @map("spatial_precision")
+  regionId           String   @map("region_id")
+  region             String
+  addressRaw         String?  @map("address_raw")
+  startYear          Int      @map("start_year")
+  endYear            Int      @map("end_year")
+  startDateRaw       String?  @map("start_date_raw")
+  endDateRaw         String?  @map("end_date_raw")
+  highlightLevel     Int      @map("highlight_level")
+  baseInfo           String   @map("base_info")
+  summary            String
+  narrative          String?
+  heritageLevel      String?  @map("heritage_level")
+  protectionStatus   String?  @map("protection_status")
+  sourceConfidence   String   @default("demo") @map("source_confidence")
+  tags               String
+  metadata           String   @default("{}")
+  status             String   @default("active")
+  reviewStatus       String   @default("approved") @map("review_status")
+  primaryMediaId     String?  @map("primary_media_id")
+  createdBy          String?  @map("created_by")
+  updatedBy          String?  @map("updated_by")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@index([placeType])
+  @@index([regionId])
+  @@index([startYear])
+  @@index([status])
+  @@map("places")
+}
+
+model Event {
+  id              String   @id
+  title           String
+  slug            String?  @unique
+  eventType       String   @default("historical") @map("event_type")
+  startTimeRaw    String   @map("start_time_raw")
+  endTimeRaw      String?  @map("end_time_raw")
+  normalizedStart String   @map("normalized_start")
+  normalizedEnd   String?  @map("normalized_end")
+  year            Int
+  month           Int?
+  day             Int?
+  summary         String
+  description     String?
+  region          String
+  regionId        String?  @map("region_id")
+  placeId         String?  @map("place_id")
+  importance      Int      @default(1)
+  sourceConfidence String  @default("demo") @map("source_confidence")
+  tags            String   @default("[]")
+  status          String   @default("active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([year])
+  @@index([placeId])
+  @@index([regionId])
+  @@map("events")
+}
+
+model Person {
+  id           String   @id
+  name         String
+  aliases      String
+  birthRaw     String?  @map("birth_raw")
+  deathRaw     String?  @map("death_raw")
+  roleTitle    String?  @map("role_title")
+  summary      String
+  biography    String?
+  tags         String   @default("[]")
+  status       String   @default("active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([name])
+  @@map("persons")
+}
+
+model Media {
+  id            String   @id
+  mediaType     String   @map("media_type")
+  url           String?
+  storageKey    String?  @map("storage_key")
+  thumbnailUrl  String?  @map("thumbnail_url")
+  title         String
+  caption       String
+  mimeType      String?  @map("mime_type")
+  sizeBytes     Int?     @map("size_bytes")
+  width         Int?
+  height        Int?
+  isAiGenerated Boolean  @default(false) @map("is_ai_generated")
+  aiPrompt      String?  @map("ai_prompt")
+  license       String?
+  provider      String?
+  creditLine    String?  @map("credit_line")
+  capturedAtRaw String?  @map("captured_at_raw")
+  sourceId      String?  @map("source_id")
+  sortOrder     Int      @default(0) @map("sort_order")
+  metadata      String   @default("{}")
+  status        String   @default("active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([mediaType])
+  @@index([sourceId])
+  @@map("media")
+}
+
+model Source {
+  id             String   @id
+  title          String
+  sourceType     String   @map("source_type")
+  citation       String
+  author         String?
+  publisher      String?
+  publishDateRaw String?  @map("publish_date_raw")
+  url            String?
+  archiveCode    String?  @map("archive_code")
+  reliability    String   @default("to_verify")
+  note           String?
+  metadata       String   @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([sourceType])
+  @@map("sources")
+}
+
+model PlaceEvent {
+  id           String @id
+  placeId      String @map("place_id")
+  eventId      String @map("event_id")
+  relationType String @map("relation_type")
+  note         String?
+  confidence   String @default("demo")
+  sortOrder    Int    @default(0) @map("sort_order")
+
+  @@unique([placeId, eventId, relationType])
+  @@index([eventId])
+  @@map("place_events")
+}
+
+model EventPerson {
+  id       String @id
+  eventId  String @map("event_id")
+  personId String @map("person_id")
+  role     String
+  note     String?
+
+  @@unique([eventId, personId, role])
+  @@index([personId])
+  @@map("event_persons")
+}
+
+model MediaLink {
+  id         String @id
+  mediaId    String @map("media_id")
+  targetType String @map("target_type")
+  targetId   String @map("target_id")
+  relationType String @default("illustrates") @map("relation_type")
+  sortOrder  Int    @default(0) @map("sort_order")
+  note       String?
+
+  @@index([targetType, targetId])
+  @@index([mediaId])
+  @@map("media_links")
+}
+
+model SourceLink {
+  id         String @id
+  sourceId   String @map("source_id")
+  targetType String @map("target_type")
+  targetId   String @map("target_id")
+  relationType String @default("evidence") @map("relation_type")
+  quote      String?
+  note       String?
+
+  @@index([targetType, targetId])
+  @@index([sourceId])
+  @@map("source_links")
+}
+
+model PlaceRelation {
+  id           String @id
+  fromPlaceId  String @map("from_place_id")
+  toPlaceId    String @map("to_place_id")
+  relationType String @map("relation_type")
+  title        String?
+  note         String?
+  weight       Int    @default(1)
+
+  @@index([fromPlaceId])
+  @@index([toPlaceId])
+  @@map("place_relations")
+}
+
+model TimelineKeyframe {
+  id          String @id
+  title       String
+  year        Int
+  month       Int?
+  day         Int?
+  placeId     String? @map("place_id")
+  eventId     String? @map("event_id")
+  camera      String  @default("{}")
+  description String
+  sortOrder   Int     @default(0) @map("sort_order")
+  status      String  @default("active")
+
+  @@index([year])
+  @@index([placeId])
+  @@map("timeline_keyframes")
+}
+
+model Favorite {
+  id        String   @id
+  userId    String   @map("user_id")
+  placeId   String   @map("place_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+  @@map("favorites")
+}
+
+model UgcSubmission {
+  id             String   @id
+  userId         String?  @map("user_id")
+  submissionType String   @map("submission_type")
+  title          String
+  submitter      String
+  placePayload    String? @map("place_payload")
+  textPayload     String? @map("text_payload")
+  mediaPayload    String? @map("media_payload")
+  sourceNote     String   @map("source_note")
+  status         String
+  reviewNote     String?  @map("review_note")
+  reviewerId     String?  @map("reviewer_id")
+  reviewedAt     DateTime? @map("reviewed_at")
+  publishedTargetType String? @map("published_target_type")
+  publishedTargetId   String? @map("published_target_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([userId])
+  @@map("ugc_submissions")
+}
+
+model ExportRequest {
+  id        String   @id
+  userId    String?  @map("user_id")
+  requestId String   @map("request_id")
+  applicant String
+  dataScope String   @map("data_scope")
+  filters   String   @default("{}")
+  reason    String
+  status    String
+  reviewNote String? @map("review_note")
+  approvedBy String? @map("approved_by")
+  fileUrl   String?  @map("file_url")
+  processedAt DateTime? @map("processed_at")
+  downloadExpiresAt DateTime? @map("download_expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([userId])
+  @@map("export_requests")
+}
+
+model DownloadRecord {
+  id              String   @id
+  exportRequestId String   @map("export_request_id")
+  userId          String?  @map("user_id")
+  token           String   @unique
+  downloadedAt    DateTime? @map("downloaded_at")
+  expiresAt       DateTime @map("expires_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([exportRequestId])
+  @@map("download_records")
+}
+
+model Notification {
+  id        String   @id
+  userId    String?  @map("user_id")
+  adminId   String?  @map("admin_id")
+  title     String
+  content   String
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([adminId])
+  @@map("notifications")
+}
+
+model AdminLog {
+  id         String   @id
+  operator   String
+  operatorId String?  @map("operator_id")
+  operatorRole String @default("admin") @map("operator_role")
+  action     String
+  target     String
+  targetType String?  @map("target_type")
+  targetId   String?  @map("target_id")
+  ipAddress  String?  @map("ip_address")
+  metadata   String   @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([action])
+  @@index([targetType, targetId])
+  @@map("admin_logs")
+}
+
+model SystemConfig {
+  id        String   @id
+  key       String   @unique
+  value     String
+  scope     String   @default("global")
+  updatedBy String?  @map("updated_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_configs")
+}
+
+model DatasetVersion {
+  id          String   @id
+  version     String   @unique
+  title       String
+  description String?
+  sourceNote  String?  @map("source_note")
+  status      String   @default("draft")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("dataset_versions")
+}

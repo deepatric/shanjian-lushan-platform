@@ -1,0 +1,9 @@
+BEGIN;
+
+ALTER TABLE public.users
+  ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+ALTER TABLE public.admins
+  ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+COMMIT;
