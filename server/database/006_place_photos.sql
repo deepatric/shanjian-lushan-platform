@@ -1026,14 +1026,14 @@ INSERT INTO public.media (id,media_type,url,storage_key,thumbnail_url,title,capt
 VALUES ('media-field-834348e3343c410b9e5a','image','/assets/places/field/dean-museum/011-6865797465.webp','/assets/places/field/dean-museum/011-6865797465.webp',NULL,'德安县博物馆 - IMG_0658','','image/webp',255070,1500,2000,FALSE,NULL,'项目实地调研','项目实地拍摄','2026:01:21 11:41:47','src-field-photos-2026',10,'{"original_path":"data/照片/德安县城/德安县博物馆/IMG_0658.jpeg","sha256":"68657974654f367a8210d47df4d06c0b4e74d8206e756301cbf50b21ca3a4ff2"}','active') ON CONFLICT (id) DO UPDATE SET url=EXCLUDED.url, storage_key=EXCLUDED.storage_key, title=EXCLUDED.title, mime_type=EXCLUDED.mime_type, size_bytes=EXCLUDED.size_bytes, width=EXCLUDED.width, height=EXCLUDED.height, captured_at_raw=EXCLUDED.captured_at_raw, sort_order=EXCLUDED.sort_order, metadata=EXCLUDED.metadata, status='active';
 INSERT INTO public.media_links (id,media_id,target_type,target_id,relation_type,sort_order,note) VALUES ('ml-field-e22470c812e760f79901','media-field-834348e3343c410b9e5a','place','pl-dean-museum','gallery_image',10,NULL) ON CONFLICT (id) DO UPDATE SET media_id=EXCLUDED.media_id, target_id=EXCLUDED.target_id, relation_type=EXCLUDED.relation_type, sort_order=EXCLUDED.sort_order;
 
-UPDATE public.places SET primary_media_id='media-field-9abe8c7c65ac6338bbef', updated_at=now() WHERE id='pl-southeast-bureau-site';
-UPDATE public.places SET primary_media_id='media-field-4f8f81da0f2ecad0d1d0', updated_at=now() WHERE id='pl-item-3004e5fb4e3c';
-UPDATE public.places SET primary_media_id='media-field-1346e6bc32d03c1c1c8c', updated_at=now() WHERE id='pl-zhou-enlai-villa-hexilu-442';
-UPDATE public.places SET primary_media_id='media-field-84c7830865a0c5a18d51', updated_at=now() WHERE id='pl-lushan-anti-japanese-memorial';
-UPDATE public.places SET primary_media_id='media-field-84c7830865a0c5a18d51', updated_at=now() WHERE id='pl-item-9f69ce34f655';
-UPDATE public.places SET primary_media_id='media-field-34abf6d22b004b9541d5', updated_at=now() WHERE id='pl-yuezhao-songlin';
-UPDATE public.places SET primary_media_id='media-field-d8dac5dad0eab6c122ea', updated_at=now() WHERE id='pl-meilu-villa';
-UPDATE public.places SET primary_media_id='media-field-e2a0b4f29a4c202406cb', updated_at=now() WHERE id='pl-wanjialing-victory-memorial-park';
-UPDATE public.places SET primary_media_id='media-field-78b83dd816ca7bf835b7', updated_at=now() WHERE id='pl-dean-museum';
+UPDATE public.places SET status='active', review_status='approved', primary_media_id='media-field-9abe8c7c65ac6338bbef', updated_at=now() WHERE id='pl-southeast-bureau-site';
+UPDATE public.places SET status='active', review_status='approved', primary_media_id='media-field-4f8f81da0f2ecad0d1d0', updated_at=now() WHERE id='pl-item-3004e5fb4e3c';
+UPDATE public.places SET status='active', review_status='approved', primary_media_id='media-field-1346e6bc32d03c1c1c8c', updated_at=now() WHERE id='pl-zhou-enlai-villa-hexilu-442';
+UPDATE public.places SET status='active', review_status='approved', primary_media_id='media-field-84c7830865a0c5a18d51', updated_at=now() WHERE id='pl-lushan-anti-japanese-memorial';
+UPDATE public.places SET status='active', review_status='approved', primary_media_id='media-field-84c7830865a0c5a18d51', updated_at=now() WHERE id='pl-item-9f69ce34f655';
+UPDATE public.places SET status='active', review_status='approved', primary_media_id='media-field-34abf6d22b004b9541d5', updated_at=now() WHERE id='pl-yuezhao-songlin';
+UPDATE public.places SET status='active', review_status='approved', primary_media_id='media-field-d8dac5dad0eab6c122ea', updated_at=now() WHERE id='pl-meilu-villa';
+UPDATE public.places SET status='active', review_status='approved', primary_media_id='media-field-e2a0b4f29a4c202406cb', updated_at=now() WHERE id='pl-wanjialing-victory-memorial-park';
+UPDATE public.places SET status='active', review_status='approved', primary_media_id='media-field-78b83dd816ca7bf835b7', updated_at=now() WHERE id='pl-dean-museum';
 
 COMMIT;

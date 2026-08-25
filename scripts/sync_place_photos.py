@@ -81,6 +81,9 @@ def captured_at(path: Path, image: Image.Image) -> str | None:
 def prepare_image(source: Path, destination: Path) -> tuple[int, int, int, str | None]:
     with Image.open(source) as opened:
         taken_at = captured_at(source, opened)
+        if destination.exists():
+            with Image.open(destination) as existing:
+                return existing.width, existing.height, destination.stat().st_size, taken_at
         image = ImageOps.exif_transpose(opened)
         if image.mode not in {"RGB", "RGBA"}:
             image = image.convert("RGBA" if "transparency" in image.info else "RGB")
@@ -227,7 +230,7 @@ def main() -> None:
     lines.append("")
     for place_id, identifier in first_media_by_place.items():
         lines.append(
-            f"UPDATE public.places SET primary_media_id={sql_text(identifier)}, updated_at=now() WHERE id={sql_text(place_id)};"
+            f"UPDATE public.places SET status='active', review_status='approved', primary_media_id={sql_text(identifier)}, updated_at=now() WHERE id={sql_text(place_id)};"
         )
     lines.extend(["", "COMMIT;", ""])
     SQL_PATH.write_text("\n".join(lines), encoding="utf-8")
