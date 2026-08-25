@@ -27,7 +27,7 @@ jobs:
       - run: npm run build
         env:
           VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}
-          VITE_API_BASE_URL: ''
+          VITE_API_BASE_URL: https://shanjian-lushan-api-deepatric.onrender.com
       - run: cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
         with:

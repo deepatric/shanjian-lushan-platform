@@ -513,6 +513,21 @@ async function syncUserFavorites(userId: string) {
 
 @Controller('api')
 class PublicController {
+  @Get('health')
+  async health() {
+    const [database, mapPoints] = await Promise.all([
+      prisma.$queryRaw<Array<{ database_name: string }>>`SELECT current_database() AS database_name`,
+      prisma.$queryRaw<Array<{ count: bigint }>>`SELECT count(*)::bigint AS count FROM public.map_points_v WHERE status = 'active'`,
+    ]);
+    return {
+      status: 'ok',
+      service: 'shanjian-lushan-api',
+      database: database[0]?.database_name,
+      mapPoints: Number(mapPoints[0]?.count ?? 0),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   @Get('map/places')
   async getMapPlaces(@Query('keyword') keyword = '', @Query('type') type = '', @Query('region_id') regionId = '', @Query('time_from') timeFrom = '1937', @Query('time_to') timeTo = '1945') {
     const types = type.split(',').filter(Boolean);
@@ -1032,13 +1047,24 @@ class AppModule {}
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ['error', 'warn', 'log'] });
   app.useBodyParser('json', { limit: '1mb' });
-  app.enableCors({ origin: true, credentials: true });
+  const allowedOrigins = new Set([
+    'http://127.0.0.1:5173',
+    'http://localhost:5173',
+    'https://deepatric.github.io',
+    ...(process.env.CORS_ORIGINS ?? '').split(',').map((origin) => origin.trim()).filter(Boolean),
+  ]);
+  app.enableCors({
+    origin: (origin, callback) => callback(null, !origin || allowedOrigins.has(origin)),
+    credentials: true,
+  });
   const [database] = await prisma.$queryRaw<Array<{ database_name: string; schema_name: string }>>`
     SELECT current_database() AS database_name, current_schema() AS schema_name
   `;
-  await app.listen(Number(process.env.PORT ?? 4000), '127.0.0.1');
+  const host = process.env.HOST ?? '0.0.0.0';
+  const port = Number(process.env.PORT ?? 4000);
+  await app.listen(port, host);
   console.log(`数据库连接已确认：${database.database_name}/${database.schema_name}`);
-  console.log(`山鉴 NestJS API 已启动：http://127.0.0.1:${process.env.PORT ?? 4000}`);
+  console.log(`山鉴 NestJS API 已启动：http://${host}:${port}`);
 }
 
 bootstrap();

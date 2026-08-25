@@ -9,6 +9,8 @@
     "typecheck": "tsc -b",
     "preview": "vite preview --host 127.0.0.1",
     "server:dev": "tsx --tsconfig server/tsconfig.json server/src/main.ts",
+    "server:start": "tsx --tsconfig server/tsconfig.json server/src/main.ts",
+    "server:deploy:init": "node server/scripts/init-production.mjs",
     "server:seed": "prisma generate --schema server/prisma/schema.prisma && prisma db push --schema server/prisma/schema.prisma && tsx --tsconfig server/tsconfig.json server/prisma/seed.ts",
     "server:generate": "prisma generate --schema server/prisma/schema.prisma",
     "server:studio": "prisma studio --schema server/prisma/schema.prisma"
@@ -21,6 +23,7 @@
     "@vitejs/plugin-react": "^5.0.0",
     "lucide-react": "^1.33.0",
     "mapbox-gl": "^3.24.0",
+    "pg": "^8.23.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0",
@@ -30,6 +33,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.21",

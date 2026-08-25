@@ -8,7 +8,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' | 'admin' }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { login, register, uiTheme, setUiTheme } = useAppStore();
-  const [email, setEmail] = useState(mode === 'admin' ? 'admin@shanjian.local' : 'viewer@example.com');
+  const [email, setEmail] = useState(mode === 'admin' ? 'admin01@shanjian.local' : 'viewer@example.com');
   const [nickname, setNickname] = useState('档案共建者');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
