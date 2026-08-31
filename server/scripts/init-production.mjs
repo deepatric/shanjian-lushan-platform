@@ -9,8 +9,34 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(__dirname, '../..');
 const databaseUrl = process.env.DATABASE_URL;
 const supplementalFiles = ['006_place_photos.sql'];
+const connectAttempts = Number(process.env.DB_CONNECT_MAX_ATTEMPTS ?? 60);
+const connectRetryDelayMs = Number(process.env.DB_CONNECT_RETRY_DELAY_MS ?? 5000);
 
 if (!databaseUrl) throw new Error('DATABASE_URL is required');
+
+const sleep = (milliseconds) => new Promise((resolveSleep) => setTimeout(resolveSleep, milliseconds));
+
+async function connectToDatabase() {
+  let lastError;
+  for (let attempt = 1; attempt <= connectAttempts; attempt += 1) {
+    const client = new Client({
+      connectionString: databaseUrl,
+      ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+    });
+    try {
+      await client.connect();
+      if (attempt > 1) console.log(`Database connection restored after ${attempt} attempts`);
+      return client;
+    } catch (error) {
+      lastError = error;
+      await client.end().catch(() => undefined);
+      if (attempt === connectAttempts) break;
+      console.warn(`Database is not ready (${attempt}/${connectAttempts}); retrying in ${connectRetryDelayMs}ms`);
+      await sleep(connectRetryDelayMs);
+    }
+  }
+  throw lastError;
+}
 
 function hashPassword(password) {
   const salt = randomBytes(16);
@@ -99,13 +125,9 @@ async function upsertAdmins(client, accounts) {
   console.log(`Initialized ${accounts.length} administrator accounts`);
 }
 
-const client = new Client({
-  connectionString: databaseUrl,
-  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
-});
+const client = await connectToDatabase();
 
 try {
-  await client.connect();
   await client.query('SELECT pg_advisory_lock($1)', [19371945]);
   if (!(await hasDataset(client))) await applyDatabaseFiles(client);
   else console.log('Database dataset already initialized; preserving current records');
